@@ -1,0 +1,6 @@
+---
+name: lint-jschol
+on: [push]
+jobs:
+  check-lint:
+    runs-on: ubuntu-latest:
