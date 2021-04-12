@@ -4,5 +4,6 @@ on: [push]
 jobs: 
   rubocop:
     name: Rubocop
+    runs-on: ubuntu-latest
     steps:
      - uses: gimenete/rubocop-action@1.0
