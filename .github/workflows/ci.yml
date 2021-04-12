@@ -1,5 +1,7 @@
 ---
 name: lint-jschol
 on: [push]
-uses: gimenete/rubocop-action@1.0
-
+jobs: 
+  rubocop:
+    name: Rubocop
+    uses: gimenete/rubocop-action@1.0
