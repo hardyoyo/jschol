@@ -4,4 +4,5 @@ on: [push]
 jobs: 
   rubocop:
     name: Rubocop
-    uses: gimenete/rubocop-action@1.0
+    steps:
+     - uses: gimenete/rubocop-action@1.0
