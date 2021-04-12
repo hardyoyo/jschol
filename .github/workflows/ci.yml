@@ -1,6 +1,5 @@
 ---
 name: lint-jschol
 on: [push]
-jobs:
-  check-lint:
-    runs-on: ubuntu-latest:
+uses: gimenete/rubocop-action@1.0
+
