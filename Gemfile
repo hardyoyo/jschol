@@ -21,6 +21,7 @@ gem 'nokogiri'            # parsing and generating XML
 gem 'parslet'             # parser to transform search into Cloudsearch compound query
 gem 'puma'                # Rack web service layer
 gem 'puma_worker_killer'  # because mem leak has been so hard to find
+gem 'rack-test'           # Rack test lets us test without standing up a real service
 gem 'sanitize'            # parse and sanitize user-supplied HTML fragments
 gem 'sequel'              # object-relational mapper (including migrations)
 gem 'sigdump', require: 'sigdump/setup' # to get thread traces with kill -CONT

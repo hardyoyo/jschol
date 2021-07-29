@@ -83,9 +83,14 @@ def ensureConnect(envPrefix)
       SocksMysql.new(dbConfig)
     end
   end
-  db = Sequel.connect(dbConfig)
-  n = db.fetch("SHOW TABLE STATUS").all.length
-  n > 0 or raise("Failed to connect to db.")
+  if ENV['APP_ENV'] == 'test'
+    puts "using eschol-test.db sqlite DB for testing"
+    db = Sequel.connect('sqlite://eschol-test.db')
+  else
+    db = Sequel.connect(dbConfig)
+    n = db.fetch("SHOW TABLE STATUS").all.length
+    n > 0 or raise("Failed to connect to db.")
+  end
   return db
 end
 
@@ -105,9 +110,11 @@ end
 puts "Connecting to eschol DB.    "
 DB = ensureConnect("ESCHOL_DB")
 #DB.loggers << Logger.new('server.sql_log')  # Enable to debug SQL queries on main db
-puts "Connecting to OJS DB.       "
-OJS_DB = ensureConnect("OJS_DB")
-#OJS_DB.loggers << Logger.new('ojs.sql_log')  # Enable to debug SQL queries on OJS db
+if ENV['APP_ENV'] != 'test'
+  puts "Connecting to OJS DB.       "
+  OJS_DB = ensureConnect("OJS_DB")
+  #OJS_DB.loggers << Logger.new('ojs.sql_log')  # Enable to debug SQL queries on OJS db
+end
 
 # When fetching ISO pages from the local server, we need the host name.
 $host = ENV['HOST'] ? "#{ENV['HOST']}.escholarship.org" : "localhost"
@@ -134,33 +141,35 @@ $escholApiServer = getEnv("ESCHOL_API_SERVER")
 $jscholKey = ENV['JSCHOL_KEY'] or raise("missing env JSCHOL_KEY")
 
 # S3 API client
-puts "Connecting to S3.           "
-S3_LOGGING = false
-if S3_LOGGING
-  # Temporary wire logging while we diagnose S3 timeouts with the AWS folks.
-  # It's so verbose that it even dumps binary data; to keep the log size at all
-  # reasonable, omit that part.
-  class S3Logger < Logger
-    @prevWasOmitted = false
-    def << (msg)
-      if msg =~ /\\r\\n/ && !(msg =~ /\\x/)
-        puts "s3: #{msg}"
-        @prevWasOmitted = false
-      else
-        if !@prevWasOmitted
-          puts "s3: [data omitted]"
+if ENV['APP_ENV'] != 'test'
+  puts "Connecting to S3.           "
+  S3_LOGGING = false
+  if S3_LOGGING
+    # Temporary wire logging while we diagnose S3 timeouts with the AWS folks.
+    # It's so verbose that it even dumps binary data; to keep the log size at all
+    # reasonable, omit that part.
+    class S3Logger < Logger
+      @prevWasOmitted = false
+      def << (msg)
+        if msg =~ /\\r\\n/ && !(msg =~ /\\x/)
+          puts "s3: #{msg}"
+          @prevWasOmitted = false
+        else
+          if !@prevWasOmitted
+            puts "s3: [data omitted]"
+          end
+          @prevWasOmitted = true
         end
-        @prevWasOmitted = true
       end
     end
+    s3Logger = S3Logger.new(STDOUT)
+    $s3Client = Aws::S3::Client.new(region: getEnv("S3_REGION"),
+                                    :logger => s3Logger, :http_wire_trace => true)
+  else
+    $s3Client = Aws::S3::Client.new(region: getEnv("S3_REGION"))
   end
-  s3Logger = S3Logger.new(STDOUT)
-  $s3Client = Aws::S3::Client.new(region: getEnv("S3_REGION"),
-                                  :logger => s3Logger, :http_wire_trace => true)
-else
-  $s3Client = Aws::S3::Client.new(region: getEnv("S3_REGION"))
+  $s3Bucket = Aws::S3::Bucket.new(getEnv("S3_BUCKET"), client: $s3Client)
 end
-$s3Bucket = Aws::S3::Bucket.new(getEnv("S3_BUCKET"), client: $s3Client)
 
 # Internal modules to implement specific pages and functionality
 require_relative '../util/sanitize.rb'

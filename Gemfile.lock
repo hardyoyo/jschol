@@ -74,6 +74,8 @@ GEM
     rack (2.2.3)
     rack-protection (2.0.2)
       rack
+    rack-test (1.1.0)
+      rack (>= 1.0, < 3)
     rake (13.0.3)
     sanitize (5.2.3)
       crass (~> 1.0.2)
@@ -128,6 +130,7 @@ DEPENDENCIES
   parslet
   puma
   puma_worker_killer
+  rack-test
   sanitize
   sequel
   sigdump
@@ -144,4 +147,4 @@ RUBY VERSION
    ruby 2.4.7p357
 
 BUNDLED WITH
-   2.2.20
+   2.2.24
