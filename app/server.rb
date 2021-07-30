@@ -83,10 +83,14 @@ def ensureConnect(envPrefix)
       SocksMysql.new(dbConfig)
     end
   end
-  if ENV['APP_ENV'] == 'test'
-    puts "using eschol-test.db sqlite DB for testing"
-    db = Sequel.connect('sqlite://eschol-test.db')
+  testDbConfig = ENV.fetch('TEST_DB_CONFIG', false)
+  if ENV['APP_ENV'] == 'test' && testDbConfig
+    puts "using testDbConfig"
+    db = Sequel.connect(testDbConfig)
+    n = db.fetch("SHOW TABLE STATUS").all.length
+    n > 0 or raise("Failed to connect to testDb.")
   else
+    puts "using dbConfig"
     db = Sequel.connect(dbConfig)
     n = db.fetch("SHOW TABLE STATUS").all.length
     n > 0 or raise("Failed to connect to db.")
