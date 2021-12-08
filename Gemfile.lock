@@ -34,11 +34,9 @@ GEM
       eventmachine (>= 0.12.9)
     escape_utils (1.2.1)
     eventmachine (1.2.3)
-    ezid-client (1.7.1)
-      hashie (~> 3.4, >= 3.4.3)
+    ezid-client (0.3.0)
     fastimage (2.1.0)
     get_process_mem (0.2.3)
-    hashie (3.5.7)
     htmlentities (4.3.4)
     httparty (0.15.5)
       multi_xml (>= 0.5.2)
@@ -165,7 +163,7 @@ DEPENDENCIES
   xml-sitemap
 
 RUBY VERSION
-   ruby 2.4.7p357
+   ruby 3.0.2p107
 
 BUNDLED WITH
-   2.2.27
+   2.2.33

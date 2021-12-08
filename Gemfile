@@ -1,5 +1,5 @@
 # Ruby gems required by this application
-ruby '> 2.4.0'
+ruby '> 3'
 source 'https://rubygems.org'
 gem 'aws-sdk-s3'          # used to work with S3 bucket contents
 gem 'aws-sdk-cloudsearch' # used to talk to AWS CloudSearch
