@@ -6,7 +6,7 @@ env_file:
   - local.env
 services:
   appserver:
-    type: ruby:2.5
+    type: ruby:2.6.8
     ports:
       - '18880:18880'
     overrides:
@@ -24,27 +24,36 @@ services:
       ports:
         - '18880:18880'
     command:
-      - /app/gulp
+      - /app/node_modules/.bin/gulp
     build_as_root:
       - apt-get update -qq
       - apt-get install -y apt-transport-https
       - apt-get install -y vim net-tools
+      # setup the Node 10 PPA from nodesource
       - curl -sL https://deb.nodesource.com/setup_10.x | bash -
+      # setup Yarn PPA
       - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
       - echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+      # pin Nodejs to version 10 so we don't accidentally upgrade to a newer version until we want to
+      - echo Package\:\ nodejs\\nPin\:\ version\ 10*\\nPin-Priority\:\ 1001 >> /etc/apt/preferences
       - apt-get update -qq
       - apt-get autoclean
-      - apt-get install mariadb-client build-essential libpq-dev yarn nodejs -y
+      # Specify the exact version of Nodejs to install, to avoid surprises
+      - apt-get install mariadb-client build-essential libpq-dev yarn nodejs=10.24.1-deb-1nodesource1 -y
       - gem install bundler
       - apt-get autoclean
+      # SSH agent hack to ensure the SSH agent on the host is accessible in this container
       - chown www-data:www-data /run/host-services/ssh-auth.sock
       - chmod g+w /run/host-services/ssh-auth.sock
+      # the symlink for gulp is nice to have
+      - if [ ! -L /app/gulp ]; then ln -s /app/node_modules/.bin/gulp /app/gulp; fi
 
     build:
-      # - gem install bundler
       - cd /app && /app/setup.sh
+      - cd /app && bundle
     run:
     run_as_root:
+      # more of the SSH agent hack to ensure the SSH agent on the host is accessible in this container
       - chown www-data:www-data /run/host-services/ssh-auth.sock
       - chmod g+w /run/host-services/ssh-auth.sock
 
@@ -52,13 +61,14 @@ services:
       - '18880'
     scanner: true
 
-  db:
-    type: mysql
-    portforward: true
-    creds:
-      user: escholdba
-      password: hard2guess
-      database: local_eschol_prod
+# uncomment this or use your .lando.local.yml file to run a local db if you need it
+  # db:
+  #   type: mysql
+  #   portforward: true
+  #   creds:
+  #     user: escholdba
+  #     password: hard2guess
+  #     database: local_eschol_prod
 
 events:
   pre-destroy:
@@ -67,34 +77,43 @@ events:
     - appserver: test -e ~/.ssh/config || printf 'Host *\n  AddKeysToAgent yes\n' > ~/.ssh/config
 
 tooling:
-  mysql:
-    service: db
-    cmd: mysql -u root
-  'db-import <file>':
-    service: :host
-    description: Imports a dump file into a database service
-    cmd: /helpers/sql-import.sh
-    options:
-      host:
-        description: The database service to use
-        default: db
-        alias:
-          - h
-      no-wipe:
-        description: Do not destroy the existing database before an import
-        boolean: true
+  # uncomment this if you want to use a local database (see above)
+  # mysql:
+  #   service: db
+  #   cmd: mysql -u root
+  # 'db-import <file>':
+  #   service: :host
+  #   description: Imports a dump file into a database service
+  #   cmd: /helpers/sql-import.sh
+  #   options:
+  #     host:
+  #       description: The database service to use
+  #       default: db
+  #       alias:
+  #         - h
+  #     no-wipe:
+  #       description: Do not destroy the existing database before an import
+  #       boolean: true
   npm:
     service: appserver
     description: Runs npm commands on the Lando Jschol appserver
+    dir: /app
+  nvm:
+    service: appserver
+    description: Runs nvm commands on the Lando Jschol appserver
+    dir: /app
+    user: root
   yarn:
     service: appserver
     description: Runs yarn commands on the Lando Jschol appserver
   ruby:
     service: appserver
     description: Runs ruby commands on the Lando Jschol appserver
+    dir: /app
   bundle:
     service: appserver
     description: Runs bundle commands on the Lando Jschol appserver
+    dir: /app
   test:
     service: appserver
     SCHEME: http
@@ -118,3 +137,4 @@ tooling:
     service: appserver
     description: Fix ssh auth sock permission for MacOS users. Lando rebuild fixes the problem as well.
     user: root
+

@@ -1,3 +1,4 @@
+gulp
 app/css
 app/js/*bundle*.js
 app/js/manifest.json
