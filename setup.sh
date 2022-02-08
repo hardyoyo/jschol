@@ -9,6 +9,9 @@ bundle install --quiet --path=gems --binstubs
 #printf "\n== Uninstalling Ruby gems no longer used ==\n"
 bundle clean
 
+printf "\n== Removing eslint if it is present (will reinstall) ==\n"
+[[ -f $HOME/node_modules/.bin/eslint ]] && rm $HOME/node_modules/.bin/eslint
+
 printf "\n== Installing node packages (used by gulp and iso via Node) ==\n"
 npm install
 

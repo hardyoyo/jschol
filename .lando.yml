@@ -6,12 +6,17 @@ env_file:
   - local.env
 services:
   appserver:
-    type: ruby:2.5
+    type: compose
+    app_mount: delegated
     ports:
       - '18880:18880'
     overrides:
+      build: ./lando/appserver
+      container_name: jschol
+      image: jschol:latest
       # Pass SSH auth.
       volumes:
+
         - type: bind
           # Linux user: add 'export LANDO_SSH_AUTH_SOCK="${SSH_AUTH_SOCK}' at the end of your ~/.bashrc:
           # Mac user: MacOS specific path is here as the variable default value, nothing to do.
@@ -21,27 +26,25 @@ services:
         SSH_AUTH_SOCK: "/run/host-services/ssh-auth.sock"
         GEM_HOME: "/usr/local/bundle"
         PATH: "/usr/local/bundle/bin:/usr/local/bundle/gems/bin:${PATH}"
+        LANDO_DROP_USER: www-data
       ports:
         - '18880:18880'
-    command:
-      - /app/gulp
+      command: ['/app/jschol-entrypoint.sh']
+      stop_signal: SIGINT
     build_as_root:
-      - apt-get update -qq
-      - apt-get install -y apt-transport-https
-      - apt-get install -y vim net-tools
-      - curl -sL https://deb.nodesource.com/setup_10.x | bash -
-      - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-      - echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-      - apt-get update -qq
-      - apt-get autoclean
-      - apt-get install mariadb-client build-essential libpq-dev yarn nodejs -y
-      - gem install bundler
-      - apt-get autoclean
+      #TODO - move most of this to the Dockerfile
+      # - apt-get update -qq && apt-get install -y apt-transport-https vim net-tools
+      # - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+      # - echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+      # - apt-get update -qq
+      # - apt-get autoclean
+      # - apt-get install mariadb-client build-essential libpq-dev yarn -y
+      # - gem install bundler
+      # - apt-get autoclean
       - chown www-data:www-data /run/host-services/ssh-auth.sock
       - chmod g+w /run/host-services/ssh-auth.sock
 
     build:
-      # - gem install bundler
       - cd /app && /app/setup.sh
     run:
     run_as_root:
@@ -50,16 +53,16 @@ services:
 
     moreHttpPorts:
       - '18880'
-    scanner: true
+    scanner: false
 
-  db:
-    type: mysql
-    portforward: true
-    creds:
-      user: escholdba
-      password: hard2guess
-      database: local_eschol_prod
-
+  # db:
+  #   type: mysql
+  #   portforward: true
+  #   creds:
+  #     user: escholdba
+  #     password: hard2guess
+  #     database: local_eschol_prod
+  #
 events:
   pre-destroy:
     - appserver: rm -Rf /app/gems/*
@@ -67,22 +70,22 @@ events:
     - appserver: test -e ~/.ssh/config || printf 'Host *\n  AddKeysToAgent yes\n' > ~/.ssh/config
 
 tooling:
-  mysql:
-    service: db
-    cmd: mysql -u root
-  'db-import <file>':
-    service: :host
-    description: Imports a dump file into a database service
-    cmd: /helpers/sql-import.sh
-    options:
-      host:
-        description: The database service to use
-        default: db
-        alias:
-          - h
-      no-wipe:
-        description: Do not destroy the existing database before an import
-        boolean: true
+  # mysql:
+  #   service: db
+  #   cmd: mysql -u root
+  # 'db-import <file>':
+  #   service: :host
+  #   description: Imports a dump file into a database service
+  #   cmd: /helpers/sql-import.sh
+  #   options:
+  #     host:
+  #       description: The database service to use
+  #       default: db
+  #       alias:
+  #         - h
+  #     no-wipe:
+  #       description: Do not destroy the existing database before an import
+  #       boolean: true
   npm:
     service: appserver
     description: Runs npm commands on the Lando Jschol appserver
