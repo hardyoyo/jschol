@@ -30,14 +30,13 @@ services:
       - apt-get update -qq
       - apt-get install -y apt-transport-https
       - apt-get install -y vim net-tools
-      - curl -sL https://deb.nodesource.com/setup_12.x | sed '/sleep/d' | bash -
+      - curl -sL $NODESOURCE_URL | sed '/sleep/d' | bash -
       - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
       - echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
       - apt-get update -qq
       - apt-get autoclean
       - apt-get install mariadb-client build-essential libpq-dev yarn nodejs -y
       - gem install bundler
-      # - gem install foreman
       - apt-get autoclean
       - chown www-data:www-data /run/host-services/ssh-auth.sock
       - chmod g+w /run/host-services/ssh-auth.sock
@@ -58,8 +57,11 @@ services:
 events:
   pre-destroy:
     - appserver: rm -Rf /app/gems/*
+    - appserver: rm -Rf /app/node_modules/.bin/*
+    - appserver: rm /app/.mysqlpsk.3306.1.*.*
   post-start:
     - appserver: test -e ~/.ssh/config || printf 'Host *\n  AddKeysToAgent yes\n' > ~/.ssh/config
+    - appserver: echo "\n\nWAIT FOR THOSE CACHES TO FILL!\n\n*** run lando -logs -f -s appserver and watch for 'filling caches ... filed'\n\n"
 
 tooling:
   node:
