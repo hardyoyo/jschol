@@ -35,7 +35,6 @@ const mathjaxConfig = {
   tex: {
     packages: { "[+]": ["html"] },
     inlineMath: [
-      ["$", "$"],
       ["\\(", "\\)"]
     ],
     displayMath: [
@@ -311,12 +310,14 @@ class PageBase extends React.Component
                     sendBinaryFileData={this.sendBinaryFileData}
                     fetchingData={this.state.fetchingData}>
           <MathJaxContext version={3} config={mathjaxConfig} src={"/js/MathJax-3.2.0/es5/tex-chtml.js"}>
+          <MathJax>
           {/* Not sure why the padding below is needed, but it is */}
           <div className="body" style={{ padding: "20px" }}>
             {this.needHeaderFooter() && <SkipNavComp/>}
             {this.state.pageData ? this.renderData(this.state.pageData) : this.renderLoading()}
             {this.needHeaderFooter() && <FooterComp/>}
           </div>
+          </MathJax>
           </MathJaxContext>
         </DrawerComp>)
     }
@@ -342,6 +343,7 @@ class PageBase extends React.Component
     // Normal case
     return (
       <MathJaxContext version={3} config={mathjaxConfig} src={"/js/MathJax-3.2.0/es5/tex-chtml.js"}>
+        <MathJax>
         <div className="body">
           {this.needHeaderFooter() && <SkipNavComp/>}
           {this.state.pageData ? this.renderData(this.state.pageData) : this.renderLoading()}
@@ -354,6 +356,7 @@ class PageBase extends React.Component
             </div>
           }
         </div>
+        </MathJax>
       </MathJaxContext>
       )
   }
