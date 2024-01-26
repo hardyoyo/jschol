@@ -64,7 +64,8 @@ class SplashFormatter
     throws IOException
   {
     pdf = in_pdf;
-    doc = new Document(pdf);
+    PageSize pageSize = pdf.getFirstPage().getPageSize();
+    doc = new Document(pdf, pageSize);
     doc.setMargins(50, 50, 50, 50);
 
 // Code2000 has the glyphs!
