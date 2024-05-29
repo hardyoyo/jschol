@@ -1,40 +1,47 @@
 // ##### Gulp Toolkit for the jschol app #####
 
-const _ = require('lodash')
-const del = require('del')
-const fs = require('fs')
-const gulp = require('gulp')
-const gutil = require('gulp-util')
-const sass = require('gulp-sass')(require('sass'))
-const autoprefixer = require('gulp-autoprefixer')
-const sourcemaps = require('gulp-sourcemaps')
-const postcss = require('gulp-postcss')
-const assets = require('postcss-assets')
-const livereload = require('gulp-livereload')
-const exec = require('child_process').exec
-const spawn = require('child_process').spawn
-const webpack = require('webpack')
-const merge = require('webpack-merge')
+// TODO: refactor to use ESM , instead of CommonJS
+
+import _ from 'lodash';
+import gulp from 'gulp';
+import gutil from 'gulp-util';
+import dartSass from 'sass';
+import gulpSass from 'gulp-sass';
+import autoprefixer from 'gulp-autoprefixer';
+import sourcemaps from 'gulp-sourcemaps';
+import postcss from 'gulp-postcss';
+import assets from 'postcss-assets';
+import livereload from 'gulp-livereload';
+import { exec, spawn } from 'child_process';
+import webpack from 'webpack';
+
+// Instantiate gulp-sass with the Dart Sass compiler
+const sass = gulpSass(dartSass);
 
 // Process control for Sinatra
-var sinatraProc // Main app in Sinatra (Ruby)
+let sinatraProc;// Main app in Sinatra (Ruby)
 
-var productionMode = !!gutil.env.production
+const productionMode = !!gutil.env.production
 
-// Build javscript bundles with Webpack
-gulp.task('watch:src', (done) => {
-  const config = merge(require('./webpack.' + (productionMode ? 'prd' : 'dev') + '.js'), {
-    watch: true,
+
+// Dynamically import the Webpack configuration file based on productionMode
+import('./webpack.' + (productionMode? 'prd' : 'dev') + '.js')
+ .then((config) => {
+    config.watch = true; // Set watch to true in the configuration
+    webpack(config, function(error, stats) {
+      if (error) {
+        gutil.log('[webpack]', error);
+      }
+      showSummary(stats);
+      livereload.reload();
+    });
+    done();
   })
-  webpack(config, function(error, stats) {
-    if (error) {
-      gutil.log('[webpack]', error);
-    }
-    showSummary(stats);
-    livereload.reload()
+ .catch((error) => {
+    console.error("Failed to load Webpack configuration:", error);
+    done();
   });
-  done()
-});
+
 
 function showSummary(stats) {
     gutil.log('[webpack]', stats.toString({
@@ -69,7 +76,7 @@ function getNPMPackageIds() {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Process Sass to CSS, add sourcemaps, autoprefix CSS selectors, optionally Base64 font and 
 // image files into CSS, and reload browser:
-gulp.task('sass', function() {
+gulp.task('sass', function(done) {
   return gulp.src('app/scss/**/*.scss')
     .pipe(sourcemaps.init())
     .pipe(sass.sync().on('error', sass.logError))
@@ -84,6 +91,7 @@ gulp.task('sass', function() {
     .pipe(sourcemaps.write('sourcemaps'))
     .pipe(gulp.dest('app/css'))
     .pipe(livereload())
+    .on('end', done);
 })
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -118,13 +126,17 @@ gulp.task('start-sinatra', restartSinatra)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Watch sass, html, and js and reload browser if any changes
-gulp.task('watch', function() {
+
+gulp.task('watch', function(done) {
   gulp.watch('app/scss/*.scss', {interval:500}, gulp.parallel(['sass']));
   // WARNING: if you are experiencing a Sinatra reload loop in Lando, comment
   // out the next watch line, OR close any Ruby files you might have open, and
   // re-open them after you boot up Lando
   gulp.watch(['app/*.rb', 'util/*.rb'], {interval:500, usePolling: true}, restartSinatra)
+  // signal completion
+  done()
 });
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 gulp.task('livereload', function(done) {
@@ -132,16 +144,18 @@ gulp.task('livereload', function(done) {
   done()
 });
 
+
 gulp.task('maybe-socks', function(done) {
   var socksProc = spawn('ruby', ['tools/maybeSocks.rb'], { stdio: 'inherit' })
   done()
 });
 
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Build everything in order, then start the servers and watch for incremental changes.
 if (productionMode) {
-  gulp.task('default',  gulp.parallel(['watch:src', 'watch', 'start-sinatra', 'sass']))
+  gulp.task('default',  gulp.parallel(['watch', 'start-sinatra', 'sass']))
 } else {
-  gulp.task('default', gulp.parallel(['watch:src', 'watch', 'start-sinatra',
+  gulp.task('default', gulp.parallel(['watch', 'start-sinatra',
                         'maybe-socks', 'livereload', 'sass']))
 }

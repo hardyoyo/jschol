@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "type": "module"
+  },
+  "include": [
+    "./**/*"
+  ]
+}

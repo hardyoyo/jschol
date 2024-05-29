@@ -31,13 +31,14 @@ services:
       - /app/gulp
     build_as_root:
       - apt-get update -qq && apt-get install -y apt-transport-https && apt-get install glibc-source
+      - apt-get install -y groff-base libxaw7 libxmu6 ghostscript libpaper1 netpbm psutils libjq1 libonig5 libyaml-0-2
       - apt-get install -y phantomjs vim net-tools
       - curl -sL https://deb.nodesource.com/setup_20.x | grep -v sleep | bash -
       - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
       - echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
       - apt-get update -qq
       - apt-get autoclean
-      - apt-get install mariadb-client build-essential libpq-dev yarn nodejs -y
+      - apt-get install -y mariadb-client build-essential libpq-dev yarn nodejs
       - gem install bundler
       # - gem install foreman
       - apt-get autoclean

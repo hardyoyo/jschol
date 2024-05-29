@@ -40,7 +40,7 @@ Description of files
 * `convert.rb`: Script to populate the new eschol5 database with units, item, etc. from the old eScholarship.
 * `gems`: Gets populated by 'bundler' with driver scripts for gems it installs. Don't modify directly.
 * `gulp`: Symbolic link to node_modules/.bin/gulp, so you can just run "./gulp" from the top-level directory.
-* `gulpfile.js`: Controls the build process for CSS and Javascript, and runs the app on the server.
+* `gulpfile.mjs`: Controls the build process for CSS and Javascript, and runs the app on the server.
 * `migrations`: Database schema in Ruby form. We can add new files here to morph the schema over time, and people can automatically upgrade their db.
 * `node_modules`: Gets populated by 'node' with server-side Javascript packages. Don't modify directly.
 * `package.json`: List of Javascript packages needed on the server. Includes mainly Gulp and React, and their dependencies.
