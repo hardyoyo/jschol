@@ -1,8 +1,16 @@
 {
   "env": {
+    "browser": true,
     "es6": true,
-    "node": true
+    "node": true,
+    "amd": true
   },
+  "globals": {
+  "globalThis": "readonly",
+  "ActiveXObject": "readonly",
+  "Deno": "readonly",
+  "Bun": "readonly"
+ },
   "extends": ["eslint:recommended", "plugin:react/recommended"],
   "parserOptions": {
     "ecmaVersion": 2018,
@@ -18,6 +26,12 @@
   "/app/js/MathJax-*/*"
   ],
 	"rules": {
+      "no-func-assign": "off",
+      "no-empty": "off",
+      "no-unsafe-finally": "off",
+      "no-cond-assign": "off",
+      "no-prototype-builtins": "off",
+      "no-self-assign": "off",
       "no-const-assign": 0,
       "no-unused-vars": 0
   },
