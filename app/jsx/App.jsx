@@ -25,6 +25,7 @@ import LoginSuccessPage from './pages/LoginSuccessPage.jsx'
 import LogoutPage from './pages/LogoutPage.jsx'
 import LogoutSuccessPage from './pages/LogoutSuccessPage.jsx'
 import UserAccountPage from './pages/UserAccountPage.jsx'
+import * as Klaro from 'klaro'
 
 // array-include polyfill for older browsers (and node.js)
 Array.prototype.includes = require('array-includes').shim()

@@ -88,6 +88,7 @@
     "intersection-observer": "^0.4.3",
     "jquery": "^3.6.0",
     "jquery.dotdotdot": "github:amywieliczka/jQuery.dotdotdot#4f7d03a442ceca0b75a2fb641a065e47297d5666",
+    "klaro": "^0.7.21",
     "lodash": "^4.17.21",
     "lozad": "^1.16.0",
     "npm": "^10.8.1",

@@ -17,6 +17,7 @@ import NavComp from '../components/NavComp.jsx'
 import ServerErrorComp from '../components/ServerErrorComp.jsx'
 import MetaTagsComp from '../components/MetaTagsComp.jsx'
 import NavBarComp from '../components/NavBarComp.jsx'
+import KlaroConfigComponent from '../components/KlaroConfigComp.jsx'
 
 // Keys used to store CMS-related data in browser's session storage
 const SESSION_LOGIN_KEY = "escholLogin"
@@ -339,6 +340,7 @@ class PageBase extends React.Component
     return (
       <MathJaxContext version={3} config={mathjaxConfig} src={"/js/MathJax-3.2.2/es5/tex-chtml.js"}>
         <div className="body">
+          {/* <KlaroConfigComponent /> */}
           {this.needHeaderFooter() && <SkipNavComp/>}
           {this.state.pageData ? this.renderData(this.state.pageData) : this.renderLoading()}
           {this.needHeaderFooter() &&
