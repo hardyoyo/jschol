@@ -6,6 +6,7 @@ import ReactGA from 'react-ga'
 import Contexts from '../contexts.jsx'
 import { Link } from 'react-router-dom'
 import { MathJaxContext } from "better-react-mathjax"
+import * as Klaro from "klaro/dist/klaro-no-css";
 
 import SkipNavComp from '../components/SkipNavComp.jsx'
 import Header1Comp from '../components/Header1Comp.jsx'
@@ -95,6 +96,21 @@ class PageBase extends React.Component
         setTimeout(() =>this.fetchPermissions(), 0)
       }, 0)
     }
+
+    // Klaro Configuration
+    const klaroConfig = {
+      services: [
+        {
+          name: 'matomo',
+          description: 'Website analytics',
+          purpose: 'analytics',
+          legalBasis: 'consent',
+          enabled: false // Initially disabled until consent is given
+        }
+        // Add other services as needed
+      ]
+    };
+
   }
 
   getSessionData() {
@@ -335,7 +351,7 @@ class PageBase extends React.Component
         )
     }
 
-    // Normal case
+    // Normal case: declare MathJaxContext, initialize Klaro, and render content
     return (
       <MathJaxContext version={3} config={mathjaxConfig} src={"/js/MathJax-3.2.2/es5/tex-chtml.js"}>
         <div className="body">
@@ -347,10 +363,18 @@ class PageBase extends React.Component
                 <a href="javascript:window.scrollTo(0, 0)">Top</a>
               </div>
               <FooterComp/>
+              <script
+                    dangerouslySetInnerHTML={{
+                      __html: `
+                        klaro.init(klaroConfig)
+                        };
+                        `,
+                    }}
+                  />
             </div>
           }
         </div>
-      </MathJaxContext>
+      </MathJaxContext> 
       )
   }
 
